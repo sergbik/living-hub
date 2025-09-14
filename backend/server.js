@@ -25,13 +25,21 @@ function initializeFiles() {
   }
 }
 
-// Настраиваем CORS, чтобы разрешить запросы с нашего фронтенда
-const corsOptions = {
-  origin: 'https://sergbik.github.io',
-  methods: ['GET', 'POST'], // Явно разрешаем нужные нам методы
-  allowedHeaders: ['Content-Type'], // Явно разрешаем заголовок
-};
-app.use(cors(corsOptions));
+// --- Ручная настройка CORS ---
+app.use((req, res, next) => {
+  // Разрешаем доступ с нашего сайта на GitHub Pages
+  res.setHeader('Access-Control-Allow-Origin', 'https://sergbik.github.io');
+  // Разрешаем методы, которые мы используем
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  // Разрешаем необходимые заголовки
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Если это preflight-запрос (OPTIONS), просто отвечаем OK
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  // Передаем управление дальше
+  next();
+});
 
 app.use(express.json());
 
