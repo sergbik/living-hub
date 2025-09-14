@@ -25,7 +25,13 @@ function initializeFiles() {
   }
 }
 
-app.use(cors());
+// Настраиваем CORS, чтобы разрешить запросы с нашего фронтенда
+const corsOptions = {
+  origin: 'https://sergbik.github.io',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // --- Helper Functions ---
