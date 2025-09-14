@@ -4,12 +4,26 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const port = 3002;
+// Render предоставляет порт через переменную окружения PORT, используем ее
+const port = process.env.PORT || 3002;
 
 const questionPath = path.join(__dirname, 'question.txt');
 const answerPath = path.join(__dirname, 'answer.txt');
 
 let deletionTimeout = null;
+
+// --- Функция инициализации ---
+// Создает файлы, если они не существуют.
+function initializeFiles() {
+  if (!fs.existsSync(questionPath)) {
+    fs.writeFileSync(questionPath, '', 'utf8');
+    console.log('Файл question.txt создан.');
+  }
+  if (!fs.existsSync(answerPath)) {
+    fs.writeFileSync(answerPath, '', 'utf8');
+    console.log('Файл answer.txt создан.');
+  }
+}
 
 app.use(cors());
 app.use(express.json());
@@ -46,26 +60,35 @@ function generateReply(question) {
 }
 
 // --- File Watcher ---
-
-fs.watch(questionPath, (eventType, filename) => {
-  if (eventType === 'change') {
-    fs.readFile(questionPath, 'utf8', (err, data) => {
-      if (err || !data.trim()) {
-        return; // Ignore if error or empty
-      }
-      console.log("Обнаружен новый вопрос...");
-      generateReply(data);
+// Запускаем наблюдатель только после того, как убедились, что файлы существуют
+function startFileWatcher() {
+    fs.watch(questionPath, (eventType, filename) => {
+        if (eventType === 'change') {
+            fs.readFile(questionPath, 'utf8', (err, data) => {
+            if (err || !data.trim()) {
+                return; // Ignore if error or empty
+            }
+            console.log("Обнаружен новый вопрос...");
+            generateReply(data);
+            });
+        }
     });
-  }
-});
+    console.log("Наблюдатель за файлом вопроса успешно запущен.");
+}
+
 
 // --- API Endpoints ---
 
 app.get('/api/qa', async (req, res) => {
   try {
-    const question = await fs.promises.readFile(questionPath, 'utf8');
-    const answer = await fs.promises.readFile(answerPath, 'utf8');
-    res.json({ question, answer });
+    // Используем асинхронное чтение, но с проверкой на существование
+    if (fs.existsSync(questionPath) && fs.existsSync(answerPath)) {
+        const question = await fs.promises.readFile(questionPath, 'utf8');
+        const answer = await fs.promises.readFile(answerPath, 'utf8');
+        res.json({ question, answer });
+    } else {
+        res.json({ question: '', answer: '' });
+    }
   } catch (err) {
     res.status(500).json({ message: "Ошибка на сервере." });
   }
@@ -93,7 +116,11 @@ app.post('/api/question', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Сервер запущен на http://localhost:${port}`);
-  // Clear files on start to ensure a clean state
+  console.log(`Сервер запущен на порту ${port}`);
+  // 1. Создаем файлы, если их нет
+  initializeFiles();
+  // 2. Очищаем их для чистого старта
   clearFiles();
+  // 3. Запускаем наблюдатель
+  startFileWatcher();
 });
