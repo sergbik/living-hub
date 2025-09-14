@@ -28,7 +28,8 @@ function initializeFiles() {
 // Настраиваем CORS, чтобы разрешить запросы с нашего фронтенда
 const corsOptions = {
   origin: 'https://sergbik.github.io',
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST'], // Явно разрешаем нужные нам методы
+  allowedHeaders: ['Content-Type'], // Явно разрешаем заголовок
 };
 app.use(cors(corsOptions));
 
