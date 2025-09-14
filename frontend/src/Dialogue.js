@@ -1,35 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import './Dialogue.css';
 
+// Определяем базовый URL нашего опубликованного бэкенда
+const API_BASE_URL = 'https://living-hub-backend.onrender.com';
+
 function Dialogue() {
   const [qa, setQa] = useState({ question: '', answer: '' });
   const [newMessageText, setNewMessageText] = useState('');
 
-  useEffect(() => {
-    const fetchQa = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/qa');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setQa(data);
-      } catch (error) {
-        console.error("Ошибка при загрузке диалога:", error);
+  // Эта функция будет получать вопрос и ответ с сервера
+  const fetchQa = async () => {
+    try {
+      // Используем правильный URL
+      const response = await fetch(`${API_BASE_URL}/api/qa`);
+      if (!response.ok) {
+        // Если сервер вернул ошибку, выводим ее
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      setQa(data);
+    } catch (error) {
+      console.error("Ошибка при загрузке диалога:", error);
+    }
+  };
 
+  useEffect(() => {
+    // Запускаем получение данных при первой загрузке
     fetchQa();
-    const interval = setInterval(fetchQa, 3000); // Poll every 3 seconds
+    // и продолжаем запрашивать их каждые 3 секунды
+    const interval = setInterval(fetchQa, 3000);
 
+    // Очищаем интервал, когда компонент исчезает
     return () => clearInterval(interval);
   }, []);
 
+  // Эта функция отправляет новый вопрос на сервер
   const handleSendMessage = async (event) => {
     event.preventDefault();
     if (!newMessageText.trim()) return;
 
     try {
+      // Используем правильный URL для отправки
       const response = await fetch(`${API_BASE_URL}/api/question`, {
         method: 'POST',
         headers: {
@@ -43,7 +54,8 @@ function Dialogue() {
       }
 
       setNewMessageText('');
-      // The file watcher on the backend will handle the rest
+      // Сразу же вызываем fetchQa, чтобы обновить статус
+      fetchQa();
     } catch (error) {
       console.error("Ошибка при отправке вопроса:", error);
       alert("Произошла ошибка при отправке вашего вопроса.");
@@ -78,7 +90,7 @@ function Dialogue() {
           onChange={(e) => setNewMessageText(e.target.value)}
           placeholder="Задайте свой вопрос здесь..."
           rows="3"
-          disabled={qa.question !== ''} // Disable form if there is an active question
+          disabled={qa.question !== ''} // Блокируем форму, пока есть активный вопрос
         />
         <button type="submit" disabled={qa.question !== ''}>
           Отправить вопрос
