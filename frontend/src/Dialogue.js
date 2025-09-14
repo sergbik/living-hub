@@ -30,7 +30,7 @@ function Dialogue() {
     if (!newMessageText.trim()) return;
 
     try {
-      const response = await fetch('http://localhost:3002/api/question', {
+      const response = await fetch(`${API_BASE_URL}/api/question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_BASE_URL = 'https://living-hub-backend.onrender.com';
+
 function DialogueBox() {
   const [question, setQuestion] = useState('');
 
@@ -8,7 +10,7 @@ function DialogueBox() {
     if (!question.trim()) return; // Не отправлять пустые вопросы
 
     try {
-      const response = await fetch('http://localhost:3002/api/questions', {
+      const response = await fetch(`${API_BASE_URL}/api/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
