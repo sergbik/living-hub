@@ -1,0 +1,34 @@
+# План развертывания для Render
+# Этот файл описывает все сервисы, необходимые для "Живого Хаба"
+
+services:
+  # 1. Веб-сервис для нашего Node.js бэкенда
+  - type: web
+    name: living-hub-backend
+    runtime: node
+    # Указываем, что все команды нужно выполнять в папке backend
+    rootDir: backend
+    # Команда для установки зависимостей
+    buildCommand: "npm install"
+    # Команда для запуска сервера
+    startCommand: "node server.js"
+    # Используем бесплатный тариф
+    plan: free
+    # Правила для автоматического развертывания
+    autoDeploy: true
+    # Переменные окружения
+    envVars:
+      # Сюда мы подставляем URL нашей Redis базы данных
+      # Ключ: REDIS_URL
+      # Значение: из создаваемой ниже базы данных `living-hub-redis`
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: living-hub-redis
+          property: connectionString
+
+  # 2. База данных Redis
+  - type: redis
+    name: living-hub-redis
+    # Используем бесплатный тариф
+    plan: free
