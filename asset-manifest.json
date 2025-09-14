@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/living-hub/static/css/main.64a8a7dc.css",
+    "main.js": "/living-hub/static/js/main.52f82cba.js",
+    "index.html": "/living-hub/index.html",
+    "main.64a8a7dc.css.map": "/living-hub/static/css/main.64a8a7dc.css.map",
+    "main.52f82cba.js.map": "/living-hub/static/js/main.52f82cba.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.64a8a7dc.css",
+    "static/js/main.52f82cba.js"
+  ]
+}
