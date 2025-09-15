@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Dialogue.css';
 
-const API_BASE_URL = 'https://living-hub-backend.onrender.com';
+const API_BASE_URL = 'https://living-hub.onrender.com';
 
 function Dialogue() {
   const [qa, setQa] = useState({ question: '', answer: '' });
