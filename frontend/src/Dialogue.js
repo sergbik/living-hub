@@ -9,6 +9,7 @@ function Dialogue() {
   const [isSending, setIsSending] = useState(false);
 
   const handleSendMessage = async (event) => {
+    alert('Функция handleSendMessage вызвана!'); // Диагностический alert
     event.preventDefault();
     if (!newMessageText.trim() || isSending) return;
 
