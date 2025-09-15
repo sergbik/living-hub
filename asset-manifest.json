@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/living-hub/static/css/main.64a8a7dc.css",
-    "main.js": "/living-hub/static/js/main.6f0bdae0.js",
+    "main.js": "/living-hub/static/js/main.2bb1d242.js",
     "index.html": "/living-hub/index.html",
     "main.64a8a7dc.css.map": "/living-hub/static/css/main.64a8a7dc.css.map",
-    "main.6f0bdae0.js.map": "/living-hub/static/js/main.6f0bdae0.js.map"
+    "main.2bb1d242.js.map": "/living-hub/static/js/main.2bb1d242.js.map"
   },
   "entrypoints": [
     "static/css/main.64a8a7dc.css",
-    "static/js/main.6f0bdae0.js"
+    "static/js/main.2bb1d242.js"
   ]
 }
