@@ -1,46 +1,63 @@
 import React, { useState } from 'react';
 import './Dialogue.css';
 
-const API_BASE_URL = 'https://living-hub.onrender.com';
+// URL нашего бэкенда
+const API_URL = 'https://living-hub.onrender.com/api/question';
 
 function Dialogue() {
-  const [qa, setQa] = useState({ question: '', answer: '' });
-  const [newMessageText, setNewMessageText] = useState('');
+  // Стейт для текста в поле ввода
+  const [inputValue, setInputValue] = useState('');
+  // Стейт для отображения вопроса и ответа
+  const [display, setDisplay] = useState({ question: '', answer: '' });
+  // Стейт для состояния отправки
   const [isSending, setIsSending] = useState(false);
 
-  const handleSendMessage = async (event) => {
-    alert('Функция handleSendMessage вызвана!'); // Диагностический alert
+  // Функция, которая вызывается при отправке формы
+  const handleSubmit = async (event) => {
+    // Предотвращаем стандартное поведение формы (перезагрузку страницы)
     event.preventDefault();
-    if (!newMessageText.trim() || isSending) return;
 
+    // Проверяем, что поле не пустое и запрос еще не отправляется
+    if (!inputValue.trim() || isSending) {
+      return;
+    }
+
+    // Переходим в состояние отправки
     setIsSending(true);
-    setQa({ question: newMessageText, answer: 'Отправка вопроса...' });
+    setDisplay({ question: inputValue, answer: 'Соединение с сервером...' });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/question`, {
+      // Отправляем запрос на сервер
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: newMessageText }),
+        body: JSON.stringify({ question: inputValue }),
       });
 
+      // Получаем ответ от сервера
       const data = await response.json();
 
+      // Если сервер ответил ошибкой, выбрасываем ее
       if (!response.ok) {
-        throw new Error(data.answer || 'Ошибка на сервере');
+        throw new Error(data.answer || 'Неизвестная ошибка сервера');
       }
-      
-      // Сразу отображаем вопрос и полученный ответ
-      setQa(data);
+
+      // Если все хорошо, обновляем отображение
+      setDisplay(data);
 
     } catch (error) {
-      console.error("Ошибка при отправке вопроса:", error);
-      // Отображаем ошибку в поле ответа
-      setQa({ question: newMessageText, answer: `Ошибка: ${error.message}` });
+      // Если произошла ошибка сети или любая другая
+      console.error("Ошибка в handleSubmit:", error);
+      setDisplay({ 
+        question: inputValue, 
+        answer: `Произошла ошибка: ${error.message}` 
+      });
     } finally {
+      // В любом случае выходим из состояния отправки
       setIsSending(false);
-      setNewMessageText('');
+      setInputValue(''); // Очищаем поле ввода
     }
   };
 
@@ -49,26 +66,28 @@ function Dialogue() {
       <h2>Живой Диалог</h2>
       
       <div className="qa-display">
-        {qa.question && (
+        {display.question && (
           <div className="question-section">
             <strong>Вопрос:</strong>
-            <p>{qa.question}</p>
+            <p>{display.question}</p>
           </div>
         )}
-        {qa.answer && (
+        {display.answer && (
           <div className="answer-section">
             <strong>Ответ Евы:</strong>
-            <p>{qa.answer}</p>
+            <p>{display.answer}</p>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSendMessage} className="send-message-form">
+      {/* Форма для отправки вопроса */}
+      <form onSubmit={handleSubmit} className="send-message-form">
         <textarea
-          value={newMessageText}
-          onChange={(e) => setNewMessageText(e.target.value)}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           placeholder="Задайте свой вопрос здесь..."
           rows="3"
+          disabled={isSending} // Блокируем поле во время отправки
         />
         <button type="submit" disabled={isSending}>
           {isSending ? 'Отправка...' : 'Отправить вопрос'}
