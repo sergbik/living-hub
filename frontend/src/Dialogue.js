@@ -1,46 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Dialogue.css';
 
-// Определяем базовый URL нашего опубликованного бэкенда
 const API_BASE_URL = 'https://living-hub-backend.onrender.com';
 
 function Dialogue() {
   const [qa, setQa] = useState({ question: '', answer: '' });
   const [newMessageText, setNewMessageText] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
-  // Эта функция будет получать вопрос и ответ с сервера
-  const fetchQa = async () => {
-    try {
-      // Используем правильный URL
-      const response = await fetch(`${API_BASE_URL}/api/qa`);
-      if (!response.ok) {
-        // Если сервер вернул ошибку, выводим ее
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setQa(data);
-    } catch (error) {
-      console.error("Ошибка при загрузке диалога:", error);
-    }
-  };
-
-  useEffect(() => {
-    // Запускаем получение данных при первой загрузке
-    fetchQa();
-    // и продолжаем запрашивать их каждые 3 секунды
-    const interval = setInterval(fetchQa, 3000);
-
-    // Очищаем интервал, когда компонент исчезает
-    return () => clearInterval(interval);
-  }, []);
-
-  // Эта функция отправляет новый вопрос на сервер
   const handleSendMessage = async (event) => {
     event.preventDefault();
-    if (!newMessageText.trim()) return;
+    if (!newMessageText.trim() || isSending) return;
+
+    setIsSending(true);
+    setQa({ question: newMessageText, answer: 'Отправка вопроса...' });
 
     try {
-      // Используем правильный URL для отправки
       const response = await fetch(`${API_BASE_URL}/api/question`, {
         method: 'POST',
         headers: {
@@ -49,16 +24,22 @@ function Dialogue() {
         body: JSON.stringify({ question: newMessageText }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const data = await response.json();
 
-      setNewMessageText('');
-      // Сразу же вызываем fetchQa, чтобы обновить статус
-      fetchQa();
+      if (!response.ok) {
+        throw new Error(data.answer || 'Ошибка на сервере');
+      }
+      
+      // Сразу отображаем вопрос и полученный ответ
+      setQa(data);
+
     } catch (error) {
       console.error("Ошибка при отправке вопроса:", error);
-      alert("Произошла ошибка при отправке вашего вопроса.");
+      // Отображаем ошибку в поле ответа
+      setQa({ question: newMessageText, answer: `Ошибка: ${error.message}` });
+    } finally {
+      setIsSending(false);
+      setNewMessageText('');
     }
   };
 
@@ -79,9 +60,6 @@ function Dialogue() {
             <p>{qa.answer}</p>
           </div>
         )}
-        {!qa.question && !qa.answer && (
-            <p>Диалог пуст. Задайте вопрос, чтобы начать.</p>
-        )}
       </div>
 
       <form onSubmit={handleSendMessage} className="send-message-form">
@@ -90,10 +68,9 @@ function Dialogue() {
           onChange={(e) => setNewMessageText(e.target.value)}
           placeholder="Задайте свой вопрос здесь..."
           rows="3"
-          disabled={qa.question !== ''} // Блокируем форму, пока есть активный вопрос
         />
-        <button type="submit" disabled={qa.question !== ''}>
-          Отправить вопрос
+        <button type="submit" disabled={isSending}>
+          {isSending ? 'Отправка...' : 'Отправить вопрос'}
         </button>
       </form>
     </div>

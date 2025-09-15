@@ -1,0 +1,8 @@
+# План развертывания для Render
+# Этот файл описывает ТОЛЬКО базу данных Redis
+
+services:
+  # База данных Redis
+  - type: redis
+    name: living-hub-redis
+    plan: free
